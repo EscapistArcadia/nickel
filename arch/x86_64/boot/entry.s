@@ -53,18 +53,121 @@ init_env:
     movw %ax, %gs
     movw %ax, %ss
 
-    movb %dl, (boot_disk)                               # save the boot drive number
+    movb %dl, (boot_disk)                               # saves the boot drive number
     
-    movw (stack_bottom), %sp                            # set the stack pointer
+    movw (stack_bottom), %sp                            # sets the stack pointer
     movw %sp, %bp
 
-load_stage_2:
+load_stage_2:                                           # loads the next stage from reserved sectors
+    movw (stage_2_limit), %ax                           # sector count based on FAT32 boot record
+    movw $0, %dx
+    divw (fat32_bytes_per_sector)
+   
+    movw (stage_2_destination), %bx
+    movw %ax, %cx
+    movw (stage_2_sector), %si
+    call read_disk
+
+    movzbw (boot_disk), %ax                             # checks the first byte of the next stage
+    pushw %ax
+    ljmp $0, $0x8000                                    # jumps to the next stage
+
+halt:                                                   # should never reach here after loading the next stage
+    hlt
+    jmp halt
+
+/* **************************************************
+ * *          Helper Functions & Constants          *
+ * ************************************************** */
+
+/**
+ * @brief prints a null-terminated string to the screen
+ *
+ * @param %bx the starting address of a null-terminated string
+ * @return void
+ */
+print_string:
+    pushw %ax
+    movb $0x0E, %ah                                     # %ah = 0x0E: opcode
+
+print_string_iterate:
+    movb (%bx), %al                                     # %al = printing character
+    cmpb $0, %al                                        # checks termination
+    je print_string_end
+    
+    int $0x10
+    incw %bx
+    jmp print_string_iterate
+
+print_string_end:
+    popw %ax
+    ret
+
+/**
+ * @brief reads a sector from the disk
+ *
+ * @param %si LBA address of the sector
+ * @param %cx the number of sectors to read
+ * @param %es:%bx the memory address to store the sector data
+ * @return void
+ */
+read_disk:
+    pushw %ax
+    pushw %dx
+    pushw %cx
+
+    movw %si, %ax
+    movw $0, %dx
+    divw (fat32_sectors_per_track)
+    incw %dx                                            # sector number
+    movw %dx, %cx
+    movw $0, %dx
+    divw (fat32_number_of_heads)                        # dx = head number
+                                                        # ax = cylinder number
+    
+    movb %dl, %dh
+    movb (boot_disk), %dl                               # drive number
+    andb $0b00111111, %cl
+    movb %al, %ch
+    shlb $6, %ah
+    orb %ah, %cl
+    
+    popw %ax
+    andw $0b01111111, %ax
+    movb $2, %ah
+    int $0x13
+    jnc read_disk_end
+    movw $read_fail_message, %bx
+    call print_string
+    jmp halt
+
+read_disk_end:
+    popw %dx
+    popw %ax
+    ret
+
+read_fail_message:
+    .ascii "Failed to read the disk.\r\n"
+    .byte 0
+
+# kernel_message:
+#    .ascii "Loading the next stage bootloader...\r\n"
+#    .byte 0
 
 boot_disk:                                              # drive number
     .byte 0x00
 
 stack_bottom:                                           # the bottom of the stack in the stage-1.
     .word 0x7C00
+
+stage_2_sector:                                         # the sector number of the next stage bootloader
+    .word 8
+
+stage_2_destination:                                    # the memory address of the next stage bootloader
+    .word 0x8000
+
+stage_2_limit:                                          # the maximum size of the next stage bootloader
+    .word 0x2000
 
 .org 0x1FE
     .byte 0x55
