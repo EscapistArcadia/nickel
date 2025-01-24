@@ -28,6 +28,7 @@ filesys:
 	dd if=boot.bin of=filesys.img bs=512 count=1 conv=notrunc
 	dd if=boot.bin of=filesys.img bs=512 count=1 seek=6 conv=notrunc
 	dd if=loader.bin of=filesys.img count=1 seek=8 conv=notrunc
+	mcopy -i filesys.img loader.bin "::NICKEL.EXE"
 
 run:
 ifdef DEBUG
