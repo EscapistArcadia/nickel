@@ -1,5 +1,5 @@
 # architecture specification
-ARCH ?= aarch64
+ARCH ?= x86_64
 
 # gnu-efi directory
 GNU_EFI_DIR := $(PWD)/../gnu-efi
@@ -36,10 +36,22 @@ filesys:
 	@mkfs.vfat -F 32 $(FILE_SYSTEM_IMAGE)
 	@mmd -i $(FILE_SYSTEM_IMAGE) ::EFI
 	@mmd -i $(FILE_SYSTEM_IMAGE) ::EFI/BOOT
+ifeq ($(ARCH), x86_64)
+	@mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/BOOTX64.EFI
+else ifeq ($(ARCH), aarch64)
 	@mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/BOOTAA64.EFI
+else
+	$error("Unsupported Architecture.")
+endif
 
 run:
+ifeq ($(ARCH), x86_64)
+	qemu-system-x86_64 -drive format=raw,file=filesys.img -bios /usr/share/ovmf/OVMF.fd
+else ifeq ($(ARCH), aarch64)
 	qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 512M -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd -drive format=raw,file=filesys.img
+else
+	$(error "Unsupported Architecture: %(ARCH)")
+endif
 
 clean:
 	$(MAKE) -C $(EFI_SRC_DIR) clean
