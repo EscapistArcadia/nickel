@@ -30,6 +30,7 @@ FILE_SYSTEM_IMAGE := $(PWD)/filesys.img
 ifeq ($(ARCH), x86_64)
 	BOOTABLE_ELF_DEST := bootx64.efi
 	UEFI_BIOS := OVMF.fd # mannually downloaded from my linux vm
+	# UEFI_BIOS := /opt/homebrew/share/qemu/edk2-x86_64-code.fd
 else ifeq ($(ARCH), aarch64)
 	BOOTABLE_ELF_DEST := bootaa64.efi
 	UEFI_BIOS := /opt/homebrew/share/qemu/edk2-aarch64-code.fd
