@@ -3,3 +3,5 @@
 *.efi
 *.elf
 *.img
+*.fd
+*.DS_Store

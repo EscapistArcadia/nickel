@@ -22,33 +22,37 @@ GDB := $(CROSS_COMPILE)gdb
 ARCH_DIR := $(PWD)/arch/$($(ARCH))
 EFI_SRC_DIR := $(PWD)/efi
 
-BOOTABLE_EFI := boot.efi
-FILE_SYSTEM_IMAGE := filesys.img
+BOOTABLE_EFI := $(PWD)/boot.efi
+FILE_SYSTEM_IMAGE := $(PWD)/filesys.img
 
-export ARCH GNU_EFI_DIR CC LD AS OBJCOPY ARCH_DIR EFI_SRC_DIR
+ifeq ($(ARCH), x86_64)
+	BOOTABLE_ELF_DEST := bootx64.efi
+else ifeq ($(ARCH), aarch64)
+	BOOTABLE_ELF_DEST := bootaa64.efi
+else
+	$(error "Unsupported Architecture: %(ARCH)")
+endif
 
-all:
+export ARCH GNU_EFI_DIR CC LD AS OBJCOPY ARCH_DIR EFI_SRC_DIR BOOTABLE_EFI FILE_SYSTEM_IMAGE
+
+all: efi_boot filesys
+
+efi_boot:
 	$(MAKE) -C $(EFI_SRC_DIR)
-	$(MAKE) filesys
 
 filesys:
 	@dd if=/dev/zero of=$(FILE_SYSTEM_IMAGE) bs=512 count=262144
 	@mkfs.vfat -F 32 $(FILE_SYSTEM_IMAGE)
 	@mmd -i $(FILE_SYSTEM_IMAGE) ::EFI
 	@mmd -i $(FILE_SYSTEM_IMAGE) ::EFI/BOOT
-ifeq ($(ARCH), x86_64)
-	@mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/BOOTX64.EFI
-else ifeq ($(ARCH), aarch64)
-	@mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/BOOTAA64.EFI
-else
-	$error("Unsupported Architecture.")
-endif
+	@mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/$(BOOTABLE_ELF_DEST)
+
 
 run:
 ifeq ($(ARCH), x86_64)
-	qemu-system-x86_64 -drive format=raw,file=filesys.img -bios /usr/share/ovmf/OVMF.fd
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios OVMF.fd
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 512M -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd -drive format=raw,file=filesys.img
+	qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 512M -drive format=raw,file=filesys.img -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd
 else
 	$(error "Unsupported Architecture: %(ARCH)")
 endif

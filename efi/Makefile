@@ -21,14 +21,13 @@ SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 
 SHARED_OBJ := boot.so
-BOOT_EFI := $(PWD)/boot.efi
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 boot: $(OBJS)
 	$(LD) $(LDFLAGS) $(GNU_EFI_CRT0) $(OBJS) -o $(SHARED_OBJ) $(GNU_EFI_FLAGS)
-	$(OBJCOPY) -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym  -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target efi-app-$(ARCH) --subsystem=10 $(SHARED_OBJ) $(BOOT_EFI)
+	$(OBJCOPY) -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym  -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target efi-app-$(ARCH) --subsystem=10 $(SHARED_OBJ) $(BOOTABLE_EFI)
 
 clean:
-	rm -rf $(OBJS) $(SHARED_OBJ) $(BOOT_EFI)
+	rm -rf $(OBJS) $(SHARED_OBJ) $(BOOTABLE_EFI)
