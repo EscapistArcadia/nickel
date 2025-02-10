@@ -19,13 +19,15 @@ AS := $(CROSS_COMPILE)as
 OBJCOPY := $(CROSS_COMPILE)objcopy
 GDB := $(CROSS_COMPILE)gdb
 
-ARCH_DIR := $(PWD)/arch/$($(ARCH))
-EFI_SRC_DIR := $(PWD)/efi
-# KERNEL_DIR := $(PWD)/kernel
+ARCH_DIR := arch/$($(ARCH))
+EFI_SRC_DIR := efi
+KERNEL_DIR := kernel
+KERNEL_INCLUDE := include
 # FS_DIR := $(PWD)/fs
 
 BOOTABLE_EFI := $(PWD)/boot.efi
 FILE_SYSTEM_IMAGE := $(PWD)/filesys.img
+KERNEL_EXECUTABLE := $(PWD)/nickel.bin
 
 ifeq ($(ARCH), x86_64)
 	BOOTABLE_ELF_DEST := bootx64.efi
@@ -39,12 +41,16 @@ else
 endif
 
 export ARCH CC LD AS OBJCOPY
-export GNU_EFI_DIR ARCH_DIR EFI_SRC_DIR BOOTABLE_EFI FILE_SYSTEM_IMAGE
+export GNU_EFI_DIR ARCH_DIR EFI_SRC_DIR KERNEL_DIR KERNEL_INCLUDE
+export BOOTABLE_EFI FILE_SYSTEM_IMAGE KERNEL_EXECUTABLE
 
-all: efi_boot filesys
+all: efi_boot nickel filesys
 
 efi_boot:
 	$(MAKE) -C $(EFI_SRC_DIR)
+
+nickel:
+	$(MAKE) -C $(KERNEL_DIR)
 
 filesys:
 	dd if=/dev/zero of=$(FILE_SYSTEM_IMAGE) bs=512 count=262144
@@ -52,6 +58,7 @@ filesys:
 	mmd -i $(FILE_SYSTEM_IMAGE) ::EFI
 	mmd -i $(FILE_SYSTEM_IMAGE) ::EFI/BOOT
 	mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/$(BOOTABLE_ELF_DEST)
+	mcopy -i $(FILE_SYSTEM_IMAGE) $(KERNEL_EXECUTABLE) ::nickel.bin
 
 run:
 ifeq ($(ARCH), x86_64)
@@ -64,4 +71,5 @@ endif
 
 clean:
 	$(MAKE) -C $(EFI_SRC_DIR) clean
+	$(MAKE) -C $(KERNEL_DIR) clean
 	rm -rf $(FILE_SYSTEM_IMAGE)

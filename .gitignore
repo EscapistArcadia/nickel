@@ -4,4 +4,8 @@
 *.elf
 *.img
 *.fd
+*.bin
+*.exe
+*.iso
+
 *.DS_Store
