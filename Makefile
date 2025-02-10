@@ -27,22 +27,26 @@ KERNEL_INCLUDE := include
 
 BOOTABLE_EFI := $(PWD)/boot.efi
 FILE_SYSTEM_IMAGE := $(PWD)/filesys.img
+KERNEL_ELF := $(PWD)/nickel.elf
 KERNEL_EXECUTABLE := $(PWD)/nickel.bin
 
 ifeq ($(ARCH), x86_64)
-	BOOTABLE_ELF_DEST := bootx64.efi
-	UEFI_BIOS := OVMF.fd # mannually downloaded from my linux vm
-	# UEFI_BIOS := /opt/homebrew/share/qemu/edk2-x86_64-code.fd
+BOOTABLE_ELF_DEST := bootx64.efi
+UEFI_BIOS := OVMF.fd # mannually downloaded from my linux vm
+KERNEL_ADDRESS := 0x400000
+# UEFI_BIOS := /opt/homebrew/share/qemu/edk2-x86_64-code.fd
 else ifeq ($(ARCH), aarch64)
-	BOOTABLE_ELF_DEST := bootaa64.efi
-	UEFI_BIOS := /opt/homebrew/share/qemu/edk2-aarch64-code.fd
+BOOTABLE_ELF_DEST := bootaa64.efi
+UEFI_BIOS := /opt/homebrew/share/qemu/edk2-aarch64-code.fd
+KERNEL_ADDRESS := 0x80000
 else
-	$(error "Unsupported Architecture: %(ARCH)")
+$(error "Unsupported Architecture: %(ARCH)")
 endif
 
 export ARCH CC LD AS OBJCOPY
 export GNU_EFI_DIR ARCH_DIR EFI_SRC_DIR KERNEL_DIR KERNEL_INCLUDE
-export BOOTABLE_EFI FILE_SYSTEM_IMAGE KERNEL_EXECUTABLE
+export BOOTABLE_EFI FILE_SYSTEM_IMAGE KERNEL_ELF KERNEL_EXECUTABLE
+export KERNEL_ADDRESS
 
 all: efi_boot nickel filesys
 
@@ -58,13 +62,13 @@ filesys:
 	mmd -i $(FILE_SYSTEM_IMAGE) ::EFI
 	mmd -i $(FILE_SYSTEM_IMAGE) ::EFI/BOOT
 	mcopy -i $(FILE_SYSTEM_IMAGE) $(BOOTABLE_EFI) ::EFI/BOOT/$(BOOTABLE_ELF_DEST)
-	mcopy -i $(FILE_SYSTEM_IMAGE) $(KERNEL_EXECUTABLE) ::nickel.bin
+	mcopy -i $(FILE_SYSTEM_IMAGE) $(KERNEL_EXECUTABLE) ::nickel.exe
 
 run:
 ifeq ($(ARCH), x86_64)
-	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS)
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -S -s
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 512M
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 1G -S -s
 else
 	$(error "Unsupported Architecture: %(ARCH)")
 endif

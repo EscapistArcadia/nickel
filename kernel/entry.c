@@ -1,10 +1,7 @@
-static void NickelMain(void);
-
 static void NickelMain(void) {
-    int ret = 0, i;
-    for (i = 0; i < 50; ++i) {
-        ret *= i;
+    int *framebuffer = (int *)0x80000000;
+    for (int i = 0; i < 320 * 240; ++i) {
+        framebuffer[i] = 0x0000FF96;
     }
-    i = ret;
     while (1);
 }

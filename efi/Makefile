@@ -9,7 +9,12 @@ CFLAGS += -fpic # position-independent
 CFLAGS += -ffreestanding # no standard C library
 CFLAGS += -fshort-wchar # 16-bit wide char
 CFLAGS += -fno-stack-protector -fno-stack-check
+CFLAGS += -Wall -Wextra -Werror -Wshadow \
+			-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable \
+			-Wswitch-default -Wold-style-definition -Wtype-limits \
+			-Wpointer-arith -Waddress -Winline -Waggregate-return
 # CFLAGS += -mno-red-zone -maccumulate-outgoing-args
+CFLAGS += -D__NICKEL__ -D__nickel__ -DNICKEL_$(ARCH) -DKERNEL_ADDRESS=$(KERNEL_ADDRESS)
 CFLAGS += -I $(GNU_EFI_INCLUDE)
 
 LDFLAGS += -shared -Bsymbolic
