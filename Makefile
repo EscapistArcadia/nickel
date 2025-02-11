@@ -33,12 +33,12 @@ KERNEL_EXECUTABLE := $(PWD)/nickel.bin
 ifeq ($(ARCH), x86_64)
 BOOTABLE_ELF_DEST := bootx64.efi
 UEFI_BIOS := OVMF.fd # mannually downloaded from my linux vm
-KERNEL_ADDRESS := 0x400000
+KERNEL_ADDRESS := 0x40000000
 # UEFI_BIOS := /opt/homebrew/share/qemu/edk2-x86_64-code.fd
 else ifeq ($(ARCH), aarch64)
 BOOTABLE_ELF_DEST := bootaa64.efi
 UEFI_BIOS := /opt/homebrew/share/qemu/edk2-aarch64-code.fd
-KERNEL_ADDRESS := 0x80000
+KERNEL_ADDRESS := 0x40000000
 else
 $(error "Unsupported Architecture: %(ARCH)")
 endif
@@ -66,12 +66,15 @@ filesys:
 
 run:
 ifeq ($(ARCH), x86_64)
-	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -S -s
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -S -s
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 1G -S -s
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -S -s
 else
 	$(error "Unsupported Architecture: %(ARCH)")
 endif
+
+gdb:
+	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file $(KERNEL_ELF)"
 
 clean:
 	$(MAKE) -C $(EFI_SRC_DIR) clean

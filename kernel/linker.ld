@@ -1,7 +1,7 @@
 ENTRY(NickelMain)
 
 SECTIONS {
-    . = 0x400000;
+    . = 0x40000000;
     
     .text : ALIGN(4K) {
         *(.multiboot)
