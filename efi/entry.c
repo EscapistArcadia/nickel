@@ -72,8 +72,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     //     if (desc->Type == EfiConventionalMemory)
     //         Print(L"[%d] Type: %d, Start: 0x%lx, End: 0x%lx, Pages: %d\n", i, desc->Type, desc->PhysicalStart, desc->PhysicalStart + desc->NumberOfPages * EFI_PAGE_SIZE, desc->NumberOfPages);
     // }
-
-    /* prints the memory map */
     
     /* **************************************************
      * *        Load Kernel Executable to Memory        *
