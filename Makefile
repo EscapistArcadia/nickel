@@ -39,6 +39,10 @@ else ifeq ($(ARCH), aarch64)
 BOOTABLE_ELF_DEST := bootaa64.efi
 UEFI_BIOS := /opt/homebrew/share/qemu/edk2-aarch64-code.fd
 KERNEL_ADDRESS := 0x40000000
+else ifeq ($(ARCH), riscv64)
+BOOTABLE_ELF_DEST := bootriscv64.efi
+UEFI_BIOS := /opt/homebrew/share/qemu/edk2-riscv64-code.fd
+KERNEL_ADDRESS := 0x40000000
 else
 $(error "Unsupported Architecture: %(ARCH)")
 endif
@@ -68,7 +72,7 @@ run:
 ifeq ($(ARCH), x86_64)
 	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -S -s
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -S -s
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G
 else
 	$(error "Unsupported Architecture: %(ARCH)")
 endif
