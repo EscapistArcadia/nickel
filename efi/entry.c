@@ -13,7 +13,15 @@ if (status != target) {                             \
     while (1);                                      \
 }
 
+/* the name of kernel executable in file system */
 #define KERNEL_FILE_NAME L"nickel.exe"
+
+/**
+ * @brief Get amount of 4KB pages by size of executable
+ * 
+ * @param size The size of executable
+ * @return The amount of 4KB pages
+ */
 #define KERNEL_PAGE_COUNT(size) (((size) / EFI_PAGE_SIZE) + 1)
 
 /**
