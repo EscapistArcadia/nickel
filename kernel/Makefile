@@ -4,7 +4,7 @@ CFLAGS += -Wall -Wextra -Werror -Wredundant-decls -Wshadow \
 			-Wswitch-default -Wold-style-definition -Wtype-limits \
 			-Wpointer-arith -Waddress -Winline -Waggregate-return
 CFLAGS += -ffreestanding -fpic -fno-stack-protector -fno-stack-check
-CFLAGS += -I $(KERNEL_INCLUDE)
+CFLAGS += -I $(KERNEL_INCLUDE) -I $(ARCH_INCLUDE)
 CFLAGS += -D__NICKEL__ -D__nickel__ -DNICKEL_$(ARCH)
 CFLAGS += -g -O0
 ifeq ($(ARCH), x86_64)
