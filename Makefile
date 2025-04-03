@@ -79,7 +79,7 @@ else
 endif
 
 gdb:
-	$(GDB) -ex "target remote 127.0.0.1:1234" -ex "symbol-file $(KERNEL_ELF)"
+	$(GDB) -ex "target remote 127.0.0.1:1234" -ex "symbol-file $(KERNEL_ELF)" -ex "break NickelMain" -ex "continue"
 
 clean:
 	$(MAKE) -C $(EFI_SRC_DIR) clean
