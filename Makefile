@@ -19,11 +19,11 @@ AS := $(CROSS_COMPILE)as
 OBJCOPY := $(CROSS_COMPILE)objcopy
 GDB := $(CROSS_COMPILE)gdb
 
-ARCH_DIR := $(PWD)/arch/$($(ARCH))
+ARCH_DIR := $(PWD)/arch/$(ARCH)
 EFI_SRC_DIR := $(PWD)/efi
 KERNEL_DIR := $(PWD)/kernel
 KERNEL_INCLUDE := $(PWD)/include
-ARCH_INCLUDE := $(ARCH_DIR)/include/arch
+ARCH_INCLUDE := $(ARCH_DIR)/include
 # FS_DIR := $(PWD)/fs
 
 BOOTABLE_EFI := $(PWD)/boot.efi
@@ -73,13 +73,13 @@ run:
 ifeq ($(ARCH), x86_64)
 	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -S -s
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -S -s
 else
 	$(error "Unsupported Architecture: %(ARCH)")
 endif
 
 gdb:
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file $(KERNEL_ELF)"
+	$(GDB) -ex "target remote 127.0.0.1:1234" -ex "symbol-file $(KERNEL_ELF)"
 
 clean:
 	$(MAKE) -C $(EFI_SRC_DIR) clean

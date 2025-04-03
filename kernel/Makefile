@@ -26,8 +26,6 @@ all: kernel
 kernel: $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $(KERNEL_ELF)
 	$(OBJCOPY) -O binary $(KERNEL_ELF) $(KERNEL_EXECUTABLE)
-	# $(LD) $(LDFLAGS) $(OBJS) -o $(KERNEL_EXECUTABLE)
-	# $(OBJCOPY) -O binary $(KERNEL_EXECUTABLE) $(KERNEL_EXECUTABLE)
 
 clean:
 	rm -rf $(OBJS) $(KERNEL_ELF) $(KERNEL_EXECUTABLE)
