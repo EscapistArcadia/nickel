@@ -85,6 +85,7 @@ else ifeq ($(ARCH), aarch64)
 	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -s -S
 else
 	$(error "Unsupported Architecture: $(ARCH)")
+endif
 
 gdb:
 	$(GDB) -ex "target remote 127.0.0.1:1234" -ex "symbol-file $(KERNEL_ELF)" -ex "break NickelMain" -ex "continue"
