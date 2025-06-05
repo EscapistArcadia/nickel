@@ -71,12 +71,20 @@ filesys:
 
 run:
 ifeq ($(ARCH), x86_64)
-	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -S -s
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -S -s
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G
 else
-	$(error "Unsupported Architecture: %(ARCH)")
+	$(error "Unsupported Architecture: $(ARCH)")
 endif
+
+debug:
+ifeq ($(ARCH), x86_64)
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -s -S
+else ifeq ($(ARCH), aarch64)
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -s -S
+else
+	$(error "Unsupported Architecture: $(ARCH)")
 
 gdb:
 	$(GDB) -ex "target remote 127.0.0.1:1234" -ex "symbol-file $(KERNEL_ELF)" -ex "break NickelMain" -ex "continue"

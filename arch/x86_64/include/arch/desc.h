@@ -1,19 +1,19 @@
 #ifndef __ARCH_TYPE_H__
 #define __ARCH_TYPE_H__
 
-typedef __INT8_TYPE__       int8_t;
-typedef __INT16_TYPE__      int16_t;
-typedef __INT32_TYPE__      int32_t;
-typedef __INT64_TYPE__      int64_t;
-typedef __UINT8_TYPE__      uint8_t;
-typedef __UINT16_TYPE__     uint16_t;
-typedef __UINT32_TYPE__     uint32_t;
-typedef __UINT64_TYPE__     uint64_t;
+typedef __INT8_TYPE__                   int8_t;
+typedef __INT16_TYPE__                  int16_t;
+typedef __INT32_TYPE__                  int32_t;
+typedef __INT64_TYPE__                  int64_t;
+typedef __UINT8_TYPE__                  uint8_t;
+typedef __UINT16_TYPE__                 uint16_t;
+typedef __UINT32_TYPE__                 uint32_t;
+typedef __UINT64_TYPE__                 uint64_t;
 
-#define SDAB_ACCESSED                   0b0001
-#define SDAB_READ_WRITE                 0b0010
-#define SDAB_DIRECTION_CONFORMING       0b0100
-#define SDAB_EXECUTABLE                 0b1000
+#define SDA_ACCESSED                    0x1
+#define SDA_READ_WRITE                  0x2
+#define SDA_DIRECTION_CONFORMING        0x4
+#define SDA_EXECUTABLE                  0x8
 
 union gdt_entry {
     uint64_t value[2];
@@ -22,7 +22,7 @@ union gdt_entry {
         uint16_t    limit_15_00;                                                    /* number of accessible bytes from base */
         uint16_t    base_15_00;                                                     /* starting physical address of the segment */
         uint8_t     base_23_16;
-        uint8_t     access_byte : 4;
+        uint8_t     access_mode : 4;
         uint8_t     not_sys_seg : 1;                                                /* system segment (1) or code/data segment (0) */
         uint8_t     dpl         : 2;                                                /* descriptor privilege level */
         uint8_t     present     : 1;                                                /* segment present in memory (1) or not (0) */

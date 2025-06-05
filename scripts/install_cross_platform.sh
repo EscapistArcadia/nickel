@@ -140,6 +140,7 @@ if [[ $install_gcc == true ]]; then
     for arch in "${archs[@]}"; do
         ../gcc/configure \
             --enable-languages=c \
+            --enable-targets=all \
             --without-headers \
             --disable-nls \
             --disable-libssp \
