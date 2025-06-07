@@ -115,9 +115,12 @@ if [[ $install_binutils == true ]]; then
     tar Jxf binutils.tar.xz -C binutils --strip-components=1
 
     cd build
-
     for arch in "${archs[@]}"; do
-        ../binutils/configure --prefix=/usr/local --target=${arch}-elf --program-prefix=${arch}-elf-
+        ../binutils/configure \
+            --enable-targets=all \
+            --target=${arch}-elf \
+            --prefix=/usr/local \
+            --program-prefix=${arch}-elf-
         make -j$(nproc) all
         sudo make install
         make distclean
@@ -138,19 +141,27 @@ if [[ $install_gcc == true ]]; then
 
     cd build
     for arch in "${archs[@]}"; do
+        # ../gcc/configure \
+        #     --enable-languages=c,c++ \
+        #     --without-headers \
+        #     --disable-nls \
+        #     --disable-libssp \
+        #     --disable-libmudflap \
+        #     --disable-multilib \
+        #     --disable-shared \
+        #     --disable-threads \
+        #     --disable-libgomp \
+        #     --disable-libquadmath \
+        #     --prefix=/usr/local --target=${arch}-elf --program-prefix=${arch}-elf- 
         ../gcc/configure \
-            --enable-languages=c \
-            --enable-targets=all \
+            --enable-languages=c,c++ \
             --without-headers \
             --disable-nls \
-            --disable-libssp \
-            --disable-libmudflap \
-            --disable-multilib \
-            --disable-shared \
-            --disable-threads \
-            --disable-libgomp \
-            --disable-libquadmath \
-            --prefix=/usr/local --target=${arch}-elf --program-prefix=${arch}-elf- 
+            --with-as=/usr/local/bin/${arch}-elf-as \
+            --with-ld=/usr/local/bin/${arch}-elf-ld \
+            --prefix=/usr/local \
+            --target=${arch}-elf \
+            --program-prefix=${arch}-elf-
         make -j$(nproc) all-gcc all-target-libgcc
         sudo make install-gcc install-target-libgcc
         make distclean
@@ -172,7 +183,11 @@ if [[ $install_gdb == true ]]; then
     cd build
 
     for arch in "${archs[@]}"; do
-        ../gdb/configure --prefix=/usr/local --target=${arch}-elf --program-prefix=${arch}-elf-
+        ../gdb/configure \
+            --with-expat \
+            --prefix=/usr/local \
+            --target=${arch}-elf \
+            --program-prefix=${arch}-elf-
         make -j$(nproc) all
         sudo make install
         make distclean
