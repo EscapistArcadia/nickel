@@ -57,7 +57,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
                                &memory_map_size, memory_map, &map_key,
                                &descriptor_size, &descriptor_version);
     EFI_CHECK_STATUS(status, EFI_BUFFER_TOO_SMALL);                                 /* must get this, because the first call is for buffer size */
-    memory_map_size += descriptor_size;
+    memory_map_size += (4 * descriptor_size);
     
     status = uefi_call_wrapper(SystemTable->BootServices->AllocatePool, 3, 
                                EfiLoaderData, memory_map_size, (VOID **)&memory_map);
@@ -123,7 +123,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     status = uefi_call_wrapper(SystemTable->BootServices->GetMemoryMap, 5,
         &memory_map_size, memory_map, &map_key,
         &descriptor_size, &descriptor_version);
-    EFI_CHECK_STATUS(status, EFI_BUFFER_TOO_SMALL);                                 /* get real-time map key to exit boot service*/
+    // EFI_CHECK_STATUS(status, EFI_BUFFER_TOO_SMALL);                                 /* get real-time map key to exit boot service*/
 
     status = uefi_call_wrapper(SystemTable->BootServices->ExitBootServices, 2, 
                                ImageHandle, map_key);

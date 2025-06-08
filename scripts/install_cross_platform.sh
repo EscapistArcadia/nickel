@@ -165,6 +165,7 @@ if [[ $install_gcc == true ]]; then
         make -j$(nproc) all-gcc all-target-libgcc
         sudo make install-gcc install-target-libgcc
         make distclean
+        rm -rf ./* ./.*
     done
     cd ..
 
