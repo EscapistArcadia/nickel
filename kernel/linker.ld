@@ -1,22 +1,29 @@
 ENTRY(NickelMain)
 
+KERNEL_BASE = 0x40000000;
+BOOT_HEADER_OFFSET = 0x1000;                                                        /* offset of struct nickel_boot_header in the binary */
+
 SECTIONS {
     . = 0x40000000;
     
-    .text : ALIGN(4K) {
+    .text : {
         *(.multiboot)
         *(.text)
     }
 
-    .rodata : ALIGN(4K) {
+    .boot_header : ALIGN(BOOT_HEADER_OFFSET) {
+        *(.boot_header)
+    }
+
+    .rodata : {
         *(.rodata)
     }
 
-    .data : ALIGN(4K) {
+    .data : {
         *(.data)
     }
 
-    .bss : ALIGN(4K) {
+    .bss : {
         *(.bss)
     }
 }

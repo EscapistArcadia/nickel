@@ -186,6 +186,8 @@ if [[ $install_gdb == true ]]; then
     for arch in "${archs[@]}"; do
         ../gdb/configure \
             --with-expat \
+            --with-python \
+            --enable-tui \
             --prefix=/usr/local \
             --target=${arch}-elf \
             --program-prefix=${arch}-elf-

@@ -19,6 +19,7 @@ AS := $(CROSS_COMPILE)as
 OBJCOPY := $(CROSS_COMPILE)objcopy
 GDB := $(CROSS_COMPILE)gdb
 
+# directory specification
 ARCH_DIR := $(PWD)/arch/$(ARCH)
 EFI_SRC_DIR := $(PWD)/efi
 KERNEL_DIR := $(PWD)/kernel
@@ -26,10 +27,16 @@ KERNEL_INCLUDE := $(PWD)/include
 ARCH_INCLUDE := $(ARCH_DIR)/include
 # FS_DIR := $(PWD)/fs
 
+# bootable image specification
 BOOTABLE_EFI := $(PWD)/boot.efi
 FILE_SYSTEM_IMAGE := $(PWD)/filesys.img
 KERNEL_ELF := $(PWD)/nickel.elf
 KERNEL_EXECUTABLE := $(PWD)/nickel.bin
+
+# kernel macro data specification
+NICKEL_HEADER_OFFSET := 0x1000
+NICKEL_BOOT_MAGIC := 0x4573636170697374
+NICKEL_VERSION := 0xECEBCAFE
 
 ifeq ($(ARCH), x86_64)
 BOOTABLE_ELF_DEST := bootx64.efi
@@ -38,7 +45,7 @@ KERNEL_ADDRESS := 0x40000000
 # UEFI_BIOS := /opt/homebrew/share/qemu/edk2-x86_64-code.fd
 else ifeq ($(ARCH), aarch64)
 BOOTABLE_ELF_DEST := bootaa64.efi
-UEFI_BIOS := /opt/homebrew/share/qemu/edk2-aarch64-code.fd
+UEFI_BIOS := /usr/share/qemu-efi-aarch64/QEMU_EFI.fd
 KERNEL_ADDRESS := 0x40000000
 else ifeq ($(ARCH), riscv64)
 BOOTABLE_ELF_DEST := bootriscv64.efi
@@ -52,6 +59,13 @@ export ARCH CC LD AS OBJCOPY
 export GNU_EFI_DIR ARCH_DIR EFI_SRC_DIR KERNEL_DIR KERNEL_INCLUDE ARCH_INCLUDE
 export BOOTABLE_EFI FILE_SYSTEM_IMAGE KERNEL_ELF KERNEL_EXECUTABLE
 export KERNEL_ADDRESS
+export NICKEL_HEADER_OFFSET
+export NICKEL_BOOT_MAGIC NICKEL_VERSION
+
+# all: gnu-efi efi_boot nickel filesys
+
+# gnu-efi:
+# 	$(MAKE) -C $(GNU_EFI_DIR) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
 
 all: efi_boot nickel filesys
 

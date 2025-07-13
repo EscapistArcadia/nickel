@@ -25,6 +25,20 @@ if (status != target) {                             \
 #define KERNEL_PAGE_COUNT(size) (((size) / EFI_PAGE_SIZE) + 1)
 
 /**
+ * @brief Boot header structure contained in the kernel binary.
+ */
+struct nickel_boot_header {
+    uint64_t magic;                                                                 /* magic number to verify, must equal to NICKEL_BOOT_MAGIC */
+    uint64_t kernel_version;
+    uint64_t kernel_size;
+    uint64_t kernel_entry;                                                          /* the location the bootloader should jump to */
+} __attribute__((packed));
+
+struct nickel_boot_info {
+    struct nickel_boot_header header;
+};
+
+/**
  * @brief The entry point of the UEFI bootloader. It is the first snippet of customized
  * code that is executed after the UEFI firmware has initialized the hardware. We just
  * find some device-related information, load kernel to the memory, and jump to it with
@@ -117,6 +131,18 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     status = uefi_call_wrapper(root->Close, 1, root);
     EFI_CHECK_STATUS(status, EFI_SUCCESS);                                          /* closes the root directory */
 
+    struct nickel_boot_header *header = (struct nickel_boot_header *)(kernel_addr + NICKEL_HEADER_OFFSET);
+    Print(L"Kernel Magic: 0x%lx\n", header->magic);
+    Print(L"Kernel Version: 0x%lx\n", header->kernel_version);
+    Print(L"Kernel Size: 0x%lx\n", header->kernel_size);
+    Print(L"Kernel Entry: 0x%lx\n", header->kernel_entry);
+    EFI_CHECK_STATUS((header->magic == NICKEL_BOOT_MAGIC), TRUE);                     /* checks the magic number */
+    EFI_CHECK_STATUS((header->kernel_version == NICKEL_VERSION), TRUE);               /* checks the kernel version */
+
+    struct nickel_boot_info boot_info = {
+        .header = *header
+    };
+
     /* **************************************************
      * *                Exit EFI Service                *
      * ************************************************** */
@@ -132,8 +158,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     /* **************************************************
      * *                 Jump to Kernel                 *
      * ************************************************** */
-    ((void (*)(void))kernel_addr)();                                                /* jumps to the kernel */
-    
+    ((void (*)(struct nickel_boot_info *))header->kernel_entry)(&boot_info);        /* jumps to the kernel */
+
     while (1);                                                                      /* should not reach here */
     return status;
 }
