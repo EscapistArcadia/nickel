@@ -65,7 +65,12 @@ hlt:
     while (1);
 }
 
-__attribute__((section(".boot_header")))
+/**
+ * @brief This is the boot header that will be used by the bootloader to verify the kernel.
+ * @note The `__attribute__((used))` is used to ensure that the linker does not remove this
+ *       symbol due to optimization.
+ */
+__attribute__((used, section(".boot_header")))
 static struct nickel_boot_header header = {
     .magic = NICKEL_BOOT_MAGIC,
     .kernel_version = NICKEL_VERSION,

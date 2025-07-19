@@ -136,8 +136,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     Print(L"Kernel Version: 0x%lx\n", header->kernel_version);
     Print(L"Kernel Size: 0x%lx\n", header->kernel_size);
     Print(L"Kernel Entry: 0x%lx\n", header->kernel_entry);
-    EFI_CHECK_STATUS((header->magic == NICKEL_BOOT_MAGIC), TRUE);                     /* checks the magic number */
-    EFI_CHECK_STATUS((header->kernel_version == NICKEL_VERSION), TRUE);               /* checks the kernel version */
+    if (header->magic != NICKEL_BOOT_MAGIC || header->kernel_version != NICKEL_VERSION) {
+        Print(L"Invalid kernel header!\n");
+        while (1);                                                                  /* halt the CPU if the header is invalid */
+    }
 
     struct nickel_boot_info boot_info = {
         .header = *header

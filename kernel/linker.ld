@@ -1,10 +1,10 @@
 ENTRY(NickelMain)
 
 KERNEL_BASE = 0x40000000;
-BOOT_HEADER_OFFSET = 0x1000;                                                        /* offset of struct nickel_boot_header in the binary */
+BOOT_HEADER_OFFSET = 0X4000;                                                        /* offset of struct nickel_boot_header in the binary */
 
 SECTIONS {
-    . = 0x40000000;
+    . = KERNEL_BASE;
     
     .text : {
         *(.multiboot)
