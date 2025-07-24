@@ -54,6 +54,7 @@ static uint64_t lcm(uint64_t a, uint64_t b) {
  * 
  * @param param the pointer to the parameter passed from the bootloader.
  */
+__attribute__((noreturn))
 static void NickelMain(struct nickel_boot_info *boot_info) {
     if (boot_info->header.magic != NICKEL_BOOT_MAGIC) {
         goto hlt;  /* halt the CPU if the magic number is incorrect */
