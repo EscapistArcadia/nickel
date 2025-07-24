@@ -21,7 +21,9 @@ struct nickel_boot_info {
     struct nickel_boot_header header;
     
     uint64_t base_address;                                                          /* the base address of the kernel in memory */
-    uint64_t boot_type;
+    // uint64_t boot_type;
+
+    uint64_t acpi_rsdp;
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <stdint.h>
+#include <arch/acpi.h>
 
 #include <boot.h>
 
@@ -56,10 +57,17 @@ static uint64_t lcm(uint64_t a, uint64_t b) {
  */
 __attribute__((noreturn))
 static void NickelMain(struct nickel_boot_info *boot_info) {
+    int32_t ret;
+    
     if (boot_info->header.magic != NICKEL_BOOT_MAGIC) {
         goto hlt;  /* halt the CPU if the magic number is incorrect */
     } else if (boot_info->header.kernel_version != NICKEL_VERSION) {
         goto hlt;  /* halt the CPU if the kernel version is incorrect */
+    }
+
+    ret = acpi_init((struct acpi_xsdp_desc *)boot_info->acpi_rsdp);
+    if (ret < 0) {
+        goto hlt;  /* halt the CPU if ACPI initialization fails */
     }
 
 hlt:

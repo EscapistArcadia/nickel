@@ -18,7 +18,7 @@ endif
 # LDFLAGS += -shared -Bsymbolic
 LDFLAGS += -T $(LINKER) # -shared -Bsymbolic
 
-SRCS := $(abspath $(wildcard *.c))
+SRCS := $(abspath $(wildcard $(ARCH_DIR)/*.c)) $(abspath $(wildcard *.c))
 OBJS := $(SRCS:.c=.o)
 LINKER := linker.ld
 

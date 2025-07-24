@@ -4,12 +4,14 @@
 #include <stdint.h>
 
 #define ACPI_RSDP_SIGNATURE                     "RSD PTR "
+#define ACPI_XSDT_SIGNATURE                     "XSDT"
 #define ACPI_MADT_SIGNATURE                     "APIC"
 
 #define ACPI_RSDP_REVISION_1                    0
 #define ACPI_RSDP_REVISION_2                    2
 
 #define ACPI_XSDT_REVISION                      1
+// #define ACPI_MADT_REVISION                      7                                /* TODO: obtained revision (3) does not match the specification */
 
 #define ACPI_MADT_APIC_FLAG_PCAT_COMPATIBLE     0x01
 
@@ -206,6 +208,6 @@ struct acpi_intr_ctrl_desc {
  * @param rsdp Pointer to the RSDP descriptor.
  * @return 0 on success, non-zero on failure.
  */
-int acpi_init(struct acpi_rsdp_desc *rsdp);
+int32_t acpi_init(struct acpi_xsdp_desc *rsdp);
 
 #endif
