@@ -1,4 +1,4 @@
-#include <arch/acpi.h>
+#include <acpi.h>
 #include <stddef.h>
 #include <stdint.h>
 

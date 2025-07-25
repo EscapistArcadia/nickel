@@ -19,7 +19,8 @@ CFLAGS += -D__NICKEL__ -D__nickel__ -DNICKEL_$(ARCH) \
 			-DKERNEL_ADDRESS=$(KERNEL_ADDRESS) \
 			-DNICKEL_BOOT_MAGIC=$(NICKEL_BOOT_MAGIC) \
 			-DNICKEL_VERSION=$(NICKEL_VERSION)
-CFLAGS += -I $(GNU_EFI_INCLUDE)
+CFLAGS += -I $(GNU_EFI_INCLUDE) \
+			-I $(KERNEL_INCLUDE)/bootproto
 
 LDFLAGS += -shared -Bsymbolic
 LDFLAGS += -nostdlib -znocombreloc

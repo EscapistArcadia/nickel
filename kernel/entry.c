@@ -1,52 +1,8 @@
 #include <limits.h>
 #include <stdint.h>
-#include <arch/acpi.h>
 
-#include <boot.h>
-
-static uint64_t fib_dp(uint64_t n) {
-    if (n <= 1) return n;
-    uint64_t a = 0, b = 1;
-    for (uint64_t i = 2; i <= n; i++) {
-        uint64_t c = a + b;
-        a = b;
-        b = c;
-    }
-    return b;
-}
-
-static uint64_t fib_recursive(uint64_t n) {
-    if (n <= 1) return n;
-    return fib_recursive(n - 1) + fib_recursive(n - 2);
-}
-
-static uint64_t fib(uint64_t n) {
-    if (n < 20) return fib_recursive(n);
-    return fib_dp(n);
-}
-
-static uint64_t factorial(uint64_t n) {
-    if (n == 0 || n == 1) return 1;
-    uint64_t result = 1;
-    for (uint64_t i = 2; i <= n; i++) {
-        result *= i;
-    }
-    return result;
-}
-
-static uint64_t gcd(uint64_t a, uint64_t b) {
-    while (b != 0) {
-        uint64_t temp = b;
-        b = a % b;
-        a = temp;
-    }
-    return a;
-}
-
-static uint64_t lcm(uint64_t a, uint64_t b) {
-    return (a / gcd(a, b)) * b;
-}
-
+#include <bootproto/bootinfo.h>
+#include <acpi.h>
 /**
  * @brief This function is the main entry point for the kernel. It is called from the bootloader
  *        after the CPU has been set up. It will diverge into different echosystems based on the
