@@ -126,10 +126,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     EFI_CHECK_STATUS(status, EFI_SUCCESS);                                          /* closes the root directory */
 
     struct nickel_boot_header *header = (struct nickel_boot_header *)(kernel_addr + NICKEL_HEADER_OFFSET);
-    Print(L"Kernel Magic: 0x%lx\n", header->magic);
-    Print(L"Kernel Version: 0x%lx\n", header->kernel_version);
-    Print(L"Kernel Size: 0x%lx\n", header->kernel_size);
-    Print(L"Kernel Entry: 0x%lx\n", header->kernel_entry);
+    // Print(L"Kernel Magic: 0x%lx\n", header->magic);
+    // Print(L"Kernel Version: 0x%lx\n", header->kernel_version);
+    // Print(L"Kernel Size: 0x%lx\n", header->kernel_size);
+    // Print(L"Kernel Entry: 0x%lx\n", header->kernel_entry);
     if (header->magic != NICKEL_BOOT_MAGIC || header->kernel_version != NICKEL_VERSION) {
         Print(L"Invalid kernel header!\n");
         while (1);                                                                  /* halt the CPU if the header is invalid */
@@ -150,9 +150,9 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
         }
     }
 
-    Print(L"Boot Info: 0x%lx\n", &boot_info);
-    Print(L"  Kernel Base Address: 0x%lx\n", boot_info.base_address);
-    Print(L"  ACPI RSDP Address: 0x%lx\n", boot_info.acpi_rsdp);
+    // Print(L"Boot Info: 0x%lx\n", &boot_info);
+    // Print(L"  Kernel Base Address: 0x%lx\n", boot_info.base_address);
+    // Print(L"  ACPI RSDP Address: 0x%lx\n", boot_info.acpi_rsdp);
 
     /* **************************************************
      * *                Exit EFI Service                *

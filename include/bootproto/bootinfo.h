@@ -3,6 +3,9 @@
 
 #include <stdint.h>                                                                 /* TODO: remove dependency, as you cannot suppose that */
 
+#define NICKEL_BOOT_MAGIC                       0x4573636170697374
+#define NICKEL_VERSION                          0xDEADBEEFECEBCAFE
+#define NICKEL_HEADER_OFFSET                    0xECEB
 /**
  * @brief Boot header structure contained in the kernel binary.
  */
