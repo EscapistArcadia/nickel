@@ -21,6 +21,8 @@ SECTIONS {
 
     .data : {
         *(.data)
+        *(.data.rel*)
+        *(.data.rel.*)
     }
 
     .bss : {

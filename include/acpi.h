@@ -1,5 +1,5 @@
-#ifndef __ARCH_X86_64_INCLUDE_ARCH_ACPI_H__
-#define __ARCH_X86_64_INCLUDE_ARCH_ACPI_H__
+#ifndef __NICKEL_ACPI_H__
+#define __NICKEL_ACPI_H__
 
 #include <stdint.h>
 
