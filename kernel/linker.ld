@@ -12,7 +12,7 @@ SECTIONS {
     }
 
     .boot_header : AT(KERNEL_BASE + BOOT_HEADER_OFFSET) {
-        *(.boot_header)
+        KEEP(*(.boot_header))
     }
 
     .rodata : {
@@ -20,10 +20,13 @@ SECTIONS {
     }
 
     .data : {
+        __ld_data_start = .;
         *(.data)
         *(.data.rel*)
         *(.data.rel.*)
+        __ld_data_end = .;
     }
+    __ld_data_lma = LOADADDR(.data);
 
     .bss : {
         *(.bss)

@@ -3,7 +3,8 @@ CFLAGS += -Wall -Wextra -Werror -Wredundant-decls -Wshadow \
 			-Wmissing-declarations -Wmissing-field-initializers \
 			-Wswitch-default -Wold-style-definition -Wtype-limits \
 			-Wpointer-arith -Waddress -Winline -Waggregate-return
-CFLAGS += -ffreestanding -fpic -fno-stack-protector -fno-stack-check
+CFLAGS += -ffreestanding -fno-stack-protector -fno-stack-check \
+			-fno-pic -fno-pie -fno-plt
 CFLAGS += -I $(KERNEL_INCLUDE) -I $(ARCH_INCLUDE)
 
 
@@ -19,7 +20,8 @@ CFLAGS += -mno-red-zone -maccumulate-outgoing-args
 endif
 
 # LDFLAGS += -shared -Bsymbolic
-LDFLAGS += -T $(LINKER) # -shared -Bsymbolic
+LDFLAGS += -T $(LINKER)
+LDFLAGS += -nostdlib -static 
 
 SRCS := $(abspath $(wildcard $(ARCH_DIR)/*.c)) $(abspath $(wildcard *.c))
 OBJS := $(SRCS:.c=.o)
