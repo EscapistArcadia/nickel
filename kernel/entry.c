@@ -8,6 +8,12 @@
 
 #if defined(NICKEL_X86_64)
 static void arch_test(void) {
+    /**
+     * @note The following snippet of code performs data section initialization (LMA). `__ld_data_start`, `__ld_data_end`,
+     * and `__ld_data_lma` are linker-defined symbols. During the compilation, initialized data is placed at the LMA
+     * (Load Memory Address), but at runtime, we need to copy it to the VMA (Virtual Memory Address) for execution.
+     * This is necessary because the kernel may be loaded at a different address than where it was compiled.
+     */
     extern uint8_t __ld_data_start, __ld_data_end, __ld_data_lma;
     uint8_t *src = &__ld_data_lma, *dst = &__ld_data_start;
     while (dst < &__ld_data_end) {
@@ -37,7 +43,10 @@ static void arch_test(void) {
         "movw %%ax, %%fs\n"
         "movw %%ax, %%gs\n"
         "movw %%ax, %%ss\n"
-        // "ljmp $0x10, halt\n"
+        "pushq $0x10\n"
+        "pushq $activate_cs\n"                                                      /* code segment selector with intended place to jump */
+        "lretq\n"                                                                   /* to activate the new code segment */
+        "activate_cs:\n"                                                            /* ljmp in long mode is a little bit complex, so we use lret */
         :
         :
         : "memory", "ax"
@@ -61,7 +70,7 @@ static void arch_test(void) {
     );
 
     asm volatile (
-        "ud2\n"  // Trigger an invalid opcode exception
+        "ud2\n"                                                                     /* triggers invalid opcode exception */
     );
 }
 #elif defined(NICKEL_AARCH64)

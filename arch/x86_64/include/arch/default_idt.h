@@ -6,7 +6,7 @@
 #define SIMPLE_IDT_ENTRY(id, handler, gate_type, thedpl) \
     (union idt_entry) { \
         offset_15_00: (uint16_t)((uint64_t)(handler) & 0xFFFF), \
-        segment: 0x08, /* Kernel Code Segment in GDT */ \
+        segment: 0x10, /* Kernel Code Segment in GDT */ \
         ist: 0, \
         reserved0: 0, \
         type: gate_type, \

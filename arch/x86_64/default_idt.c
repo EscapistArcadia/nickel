@@ -24,8 +24,10 @@ static void exp05_bound_range_exceeded(void) {
     while (1);
 }
 
-__attribute__((naked))
 static void exp06_invalid_opcode(void) {
+    asm volatile ("cli");
+    asm volatile ("hlt");
+    asm volatile ("1: jmp 1b");  // Infinite loop to halt the CPU
     while (1);
 }
 
