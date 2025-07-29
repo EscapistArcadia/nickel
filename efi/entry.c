@@ -1,6 +1,8 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include <bootinfo.h>
+
 /**
  * @brief Checks if returned status is equal to the supposed status.
  * 
@@ -23,25 +25,6 @@ if (status != target) {                             \
  * @return The amount of 4KB pages
  */
 #define KERNEL_PAGE_COUNT(size) (((size) / EFI_PAGE_SIZE) + 1)
-
-/**
- * @brief Boot header structure contained in the kernel binary.
- */
-struct nickel_boot_header {
-    uint64_t magic;                                                                 /* magic number to verify, must equal to NICKEL_BOOT_MAGIC */
-    uint64_t kernel_version;
-    uint64_t kernel_size;
-    uint64_t kernel_entry;                                                          /* the location the bootloader should jump to */
-} __attribute__((packed));
-
-struct nickel_boot_info {
-    struct nickel_boot_header header;
-    
-    uint64_t base_address;                                                          /* the base address of the kernel in memory */
-    // uint64_t boot_type;
-
-    uint64_t acpi_xsdp;
-};
 
 /**
  * @brief The entry point of the UEFI bootloader. It is the first snippet of customized
@@ -155,17 +138,21 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     struct nickel_boot_info boot_info = {
         .header = *header,
         .base_address = kernel_addr,
-        .acpi_xsdp = boot_info.acpi_xsdp
+        // .acpi_rsdp = boot_info.acpi_xsdp
     };
 
     EFI_GUID gEfiAcpi20TableGuid = ACPI_20_TABLE_GUID;                              /* ACPI 2.0 table GUID */
     for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++) {
         if (CompareGuid(&SystemTable->ConfigurationTable[i].VendorGuid, &gEfiAcpi20TableGuid) == 0) {
-            boot_info.acpi_xsdp = (UINT64)SystemTable->ConfigurationTable[i].VendorTable; /* gets the ACPI XSDT address */
-            Print(L"ACPI XSDP Address: 0x%lx\n", boot_info.acpi_xsdp);
+            boot_info.acpi_rsdp = (UINT64)SystemTable->ConfigurationTable[i].VendorTable; /* gets the ACPI XSDT address */
+            // Print(L"ACPI XSDP Address: 0x%lx\n", boot_info.acpi_xsdp);
             break;                                                                  /* found the ACPI table */
         }
     }
+
+    // Print(L"Boot Info: 0x%lx\n", &boot_info);
+    // Print(L"  Kernel Base Address: 0x%lx\n", boot_info.base_address);
+    // Print(L"  ACPI RSDP Address: 0x%lx\n", boot_info.acpi_rsdp);
 
     /* **************************************************
      * *                Exit EFI Service                *

@@ -3,6 +3,10 @@
 
 #include <stdint.h>                                                                 /* TODO: remove dependency, as you cannot suppose that */
 
+#define NICKEL_BOOT_MAGIC                       0x4573636170697374                  /* "Escapist" in ASCII */
+#define NICKEL_VERSION                          0xDEADBEEFECEBCAFE                  /* placeholder */
+#define NICKEL_HEADER_OFFSET                    0xECEB                              /* offset of the header in the kernel binary */
+
 /**
  * @brief Boot header structure contained in the kernel binary.
  */

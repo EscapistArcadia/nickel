@@ -14,12 +14,15 @@ CFLAGS += -Wall -Wextra -Werror -Wshadow \
 			-Wswitch-default -Wold-style-definition -Wtype-limits \
 			-Wpointer-arith -Waddress -Winline -Waggregate-return
 # CFLAGS += -mno-red-zone -maccumulate-outgoing-args
-CFLAGS += -D__NICKEL__ -D__nickel__ -DNICKEL_$(ARCH) \
-			-DNICKEL_HEADER_OFFSET=$(NICKEL_HEADER_OFFSET) \
+
+ARCH_MACRO := $(shell echo $(ARCH) | tr '[:lower:]' '[:upper:]')
+CFLAGS += -D__NICKEL__ -D__nickel__ -DNICKEL_$(ARCH_MACRO) \
 			-DKERNEL_ADDRESS=$(KERNEL_ADDRESS) \
-			-DNICKEL_BOOT_MAGIC=$(NICKEL_BOOT_MAGIC) \
-			-DNICKEL_VERSION=$(NICKEL_VERSION)
-CFLAGS += -I $(GNU_EFI_INCLUDE)
+# 			-DNICKEL_HEADER_OFFSET=$(NICKEL_HEADER_OFFSET) \
+# 			-DNICKEL_BOOT_MAGIC=$(NICKEL_BOOT_MAGIC) \
+# 			-DNICKEL_VERSION=$(NICKEL_VERSION)
+CFLAGS += -I $(GNU_EFI_INCLUDE) \
+			-I $(KERNEL_INCLUDE)/bootproto
 
 LDFLAGS += -shared -Bsymbolic
 LDFLAGS += -nostdlib -znocombreloc
