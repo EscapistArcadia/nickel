@@ -71,6 +71,7 @@ static void arch_test(void) {
 
     asm volatile (
         "ud2\n"                                                                     /* triggers invalid opcode exception */
+        "int3\n"                                                                    /* triggers breakpoint exception */
     );
 }
 #elif defined(NICKEL_AARCH64)
