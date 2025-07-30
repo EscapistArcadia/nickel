@@ -7,28 +7,22 @@ SECTIONS {
     . = KERNEL_BASE;
     
     .text : {
-        *(.multiboot)
         *(.text)
     }
-
-    .boot_header : AT(KERNEL_BASE + BOOT_HEADER_OFFSET) {
-        KEEP(*(.boot_header))
-    }
-
+    
     .rodata : {
         *(.rodata)
     }
 
     .data : {
-        __ld_data_start = .;
         *(.data)
-        *(.data.rel*)
-        *(.data.rel.*)
-        __ld_data_end = .;
     }
-    __ld_data_lma = LOADADDR(.data);
 
     .bss : {
         *(.bss)
+    }
+
+    .boot_header (KERNEL_BASE + BOOT_HEADER_OFFSET) : AT(KERNEL_BASE + BOOT_HEADER_OFFSET) {
+        KEEP(*(.boot_header))
     }
 }

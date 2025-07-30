@@ -13,12 +13,14 @@ static void arch_test(void) {
      * and `__ld_data_lma` are linker-defined symbols. During the compilation, initialized data is placed at the LMA
      * (Load Memory Address), but at runtime, we need to copy it to the VMA (Virtual Memory Address) for execution.
      * This is necessary because the kernel may be loaded at a different address than where it was compiled.
+     * 
+     * @todo This is a temporary solution. I remembered that I don't need to manually do this. I will find out why.
      */
-    extern uint8_t __ld_data_start, __ld_data_end, __ld_data_lma;
-    uint8_t *src = &__ld_data_lma, *dst = &__ld_data_start;
-    while (dst < &__ld_data_end) {
-        *dst++ = *src++;
-    }
+    // extern uint8_t __ld_data_start, __ld_data_end, __ld_data_lma;
+    // uint8_t *src = &__ld_data_lma, *dst = &__ld_data_start;
+    // while (dst < &__ld_data_end) {
+    //     *dst++ = *src++;
+    // }
 
     asm volatile (
         "lgdt %0\n"
@@ -111,7 +113,7 @@ halt:
  * @note The `__attribute__((used))` is used to ensure that the linker does not remove this
  *       symbol due to optimization.
  */
-__attribute__((used, section(".boot_header")))
+__attribute__((used, section(".boot_header"), aligned(1)))
 static struct nickel_boot_header header = {
     .magic = NICKEL_BOOT_MAGIC,
     .kernel_version = NICKEL_VERSION,

@@ -9,12 +9,12 @@
 // static struct acpi_xsdp_desc *xsdp;
 // static struct acpi_xsdt_desc *xsdt;
 
-static int strncmp(const char *s1, const char *s2, int n) {
+static int strncmp(const char *s1, const char *s2, size_t n) {
     while (n-- && *s1 && (*s1 == *s2)) {
         s1++;
         s2++;
     }
-    return n < 0 ? 0 : *(unsigned char *)s1 - *(unsigned char *)s2;
+    return n ? 0 : *(unsigned char *)s1 - *(unsigned char *)s2;
 }
 
 /**
