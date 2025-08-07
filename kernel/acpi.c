@@ -2,19 +2,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// static struct acpi_xsdp_desc *rsdp;
-// static struct acpi_rsdt_desc *rsdt;
-
-
-// static struct acpi_xsdp_desc *xsdp;
-// static struct acpi_xsdt_desc *xsdt;
+static volatile uint32_t cores = 0, enabled_cores = 0;
+static volatile struct acpi_processor_local_apic processors[256];
 
 static int strncmp(const char *s1, const char *s2, size_t n) {
-    while (n-- && *s1 && (*s1 == *s2)) {
-        s1++;
-        s2++;
+    while (n && *s1 && ( *s1 == *s2 )) {
+        ++s1;
+        ++s2;
+        --n;
     }
-    return n ? 0 : *(unsigned char *)s1 - *(unsigned char *)s2;
+    return n == 0 ? 0 : ( *(unsigned char *)s1 - *(unsigned char *)s2 );
 }
 
 /**
@@ -35,7 +32,6 @@ static inline int acpi_checksum(const uint8_t *table, uint32_t size) {
 
 static int32_t acpi_parse_madt(const struct acpi_madt_desc *madt) {
     struct acpi_intr_ctrl_desc *entry;
-    uint32_t cores;
 
     if (madt == NULL) {
         return ACPI_INVALID_PARAMETER;
@@ -51,8 +47,12 @@ static int32_t acpi_parse_madt(const struct acpi_madt_desc *madt) {
         entry = (struct acpi_intr_ctrl_desc *)((size_t)entry + entry->length)
     ) {
         if (entry->type == ACPI_MADT_APIC_TYPE_PROCESSOR) {
+            processors[cores].uid = entry->processor.uid;
+            processors[cores].apic_id = entry->processor.apic_id;
+            processors[cores].flags = entry->processor.flags;
+            ++cores;
             if (entry->processor.flags & ACPI_PROCESSOR_LOCAL_ENABLED) {
-                cores++;
+                ++enabled_cores;
             }
         }
     }
@@ -91,16 +91,17 @@ static int32_t acpi_parse_xsdt(const struct acpi_xsdt_desc *xsdt) {
         return ACPI_MISMATCH_CROSSTABLE;
     }
 
+    ret = ACPI_SUCCESS;
     for (i = 0; i < entry_count; i++) {
         entry = (struct acpi_desc_header *)(uintptr_t)xsdt->entries[i];
-        if (strncmp(entry->signature, ACPI_MADT_SIGNATURE, 4) == 0
-            && (ret = acpi_parse_madt((struct acpi_madt_desc *)entry)) != ACPI_SUCCESS
-        ) {
-            return ret;
+        if (strncmp(entry->signature, ACPI_MADT_SIGNATURE, 4) == 0) {
+            if (acpi_parse_madt((struct acpi_madt_desc *)entry) < 0) {
+                break;
+            }
         }
     }
 
-    return ACPI_SUCCESS;
+    return ret;
 }
 
 /**

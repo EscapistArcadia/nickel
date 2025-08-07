@@ -149,22 +149,26 @@ struct acpi_madt_desc {
     // struct acpi_intr_ctrl_desc entries[0];                                      /* variable length entries, but not pointers */
 } __attribute__((packed));
 
+struct acpi_processor_local_apic {
+    uint8_t uid;                                                                /* unique ID of the processor */
+    uint8_t apic_id;                                                            /* APIC ID of the processor */
+    uint32_t flags;
+} __attribute__((packed));
+
+struct acpi_io_apic {
+    uint8_t apic_id;                                                            /* APIC ID of the I/O APIC */
+    uint8_t reserved;                                                           /* reserved byte, must be 0 */
+    uint32_t apic_address;                                                      /* address of the I/O APIC */
+    uint32_t global_interrupt_base;                                             /* base of the global interrupt number */
+} __attribute__((packed));
+
 struct acpi_intr_ctrl_desc {
     uint8_t type;
     uint8_t length;
     
     union {
-        struct {
-            uint8_t uid;
-            uint8_t apic_id;
-            uint32_t flags;
-        } __attribute__((packed)) processor;
-        struct {
-            uint8_t apic_id;
-            uint8_t reserved;
-            uint32_t apic_addr;
-            uint32_t global_interrupt_base;
-        } __attribute__((packed)) io;
+        struct acpi_processor_local_apic processor;                             /* processor local APIC */
+        struct acpi_io_apic io_apic;                                            /* I/O APIC */
         struct {
             uint8_t bus;
             uint8_t source;
