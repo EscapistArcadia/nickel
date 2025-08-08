@@ -23,7 +23,7 @@ endif
 LDFLAGS += -T $(LINKER)
 LDFLAGS += -nostdlib -static 
 
-SRCS := $(abspath $(wildcard $(ARCH_DIR)/*.c)) $(abspath $(wildcard *.c))
+SRCS := $(abspath $(shell find $(ARCH_DIR) -name "*.c")) $(abspath $(shell find . -name "*.c"))
 OBJS := $(SRCS:.c=.o)
 LINKER := linker.ld
 

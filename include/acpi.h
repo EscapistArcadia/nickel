@@ -150,16 +150,16 @@ struct acpi_madt_desc {
 } __attribute__((packed));
 
 struct acpi_processor_local_apic {
-    uint8_t uid;                                                                /* unique ID of the processor */
-    uint8_t apic_id;                                                            /* APIC ID of the processor */
+    uint8_t uid;                                                                    /* unique ID of the processor */
+    uint8_t apic_id;                                                                /* APIC ID of the processor */
     uint32_t flags;
 } __attribute__((packed));
 
 struct acpi_io_apic {
-    uint8_t apic_id;                                                            /* APIC ID of the I/O APIC */
-    uint8_t reserved;                                                           /* reserved byte, must be 0 */
-    uint32_t apic_address;                                                      /* address of the I/O APIC */
-    uint32_t global_interrupt_base;                                             /* base of the global interrupt number */
+    uint8_t apic_id;                                                                /* APIC ID of the I/O APIC */
+    uint8_t reserved;                                                               /* reserved byte, must be 0 */
+    uint32_t apic_address;                                                          /* address of the I/O APIC */
+    uint32_t global_interrupt_base;                                                 /* base of the global interrupt number */
 } __attribute__((packed));
 
 struct acpi_intr_ctrl_desc {
@@ -167,42 +167,8 @@ struct acpi_intr_ctrl_desc {
     uint8_t length;
     
     union {
-        struct acpi_processor_local_apic processor;                             /* processor local APIC */
-        struct acpi_io_apic io_apic;                                            /* I/O APIC */
-        struct {
-            uint8_t bus;
-            uint8_t source;
-            uint32_t global_interrupt;
-            uint16_t flags;
-        } __attribute__((packed)) interrupt_override;
-        struct {
-            uint16_t flags;
-            uint32_t global_interrupt;
-        } __attribute__((packed)) nmi_source;
-        struct {
-            uint8_t uid;
-            uint16_t flags;
-            uint8_t local_interrupt;
-        } __attribute__((packed)) local_apic_nmi;
-        struct {
-            uint16_t reserved;
-            uint32_t interface;
-            uint32_t uid;
-            uint32_t flags;
-            uint32_t parking_protocol_version;
-            uint32_t perf_gsi;
-            uint64_t parked_addr;
-            uint64_t physical_addr;
-            uint64_t gicv;
-            uint64_t gich;
-            uint32_t vgic_intr;
-            uint64_t gcir_base;
-            uint64_t mpidr;
-            uint8_t power_eff_class;
-            uint8_t reserved1;
-            uint16_t spe_overflow_intr;
-            uint16_t trbe_intr;
-        } __attribute__((packed)) gic;
+        struct acpi_processor_local_apic processor;                                 /* type = 0 */
+        struct acpi_io_apic io_apic;                                                /* type = 1 */
     };
 } __attribute__((packed));
 
