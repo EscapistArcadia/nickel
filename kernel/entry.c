@@ -6,7 +6,32 @@
 #include <arch/flat_gdt.h>
 #include <arch/default_idt.h>
 
+#include <arch/apic/registers.h>
+
 #if defined(NICKEL_X86_64)
+static void apic_test(void) {
+    volatile union apic_base_msr base_msr;
+    volatile uint32_t eax, ebx, ecx, edx;
+
+    asm volatile (
+        "cpuid\n"
+        : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+        : "a"(0)
+    );
+
+    asm volatile (
+        "cpuid\n"
+        : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+        : "a"(1)
+    );
+
+    apic_read_base_msr(base_msr);
+    if (!base_msr.apic_enable) {
+        base_msr.apic_enable = 1;  /* enable the APIC */
+        apic_write_base_msr(base_msr);
+    }
+}
+
 static void arch_test(void) {
     /**
      * @note The following snippet of code performs data section initialization (LMA). `__ld_data_start`, `__ld_data_end`,
@@ -75,6 +100,8 @@ static void arch_test(void) {
     //     "ud2\n"                                                                     /* triggers invalid opcode exception */
     //     "int3\n"                                                                    /* triggers breakpoint exception */
     // );
+
+    apic_test();
 }
 #elif defined(NICKEL_AARCH64)
 #elif defined(NICKEL_RISCV64)
