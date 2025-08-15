@@ -79,12 +79,12 @@
 
 #define apic_read_reg(base, reg, dest, type) \
     do {                                \
-        dest = *((volatile type *)((base) + (reg))); \
+        dest = *((volatile const type *)((uint64_t)(base) + (uint64_t)(reg))); \
     } while (0)
 
 #define apic_write_reg(base, reg, src, type) \
     do {                                \
-        *((volatile type *)((base) + (reg))) = (src); \
+        *((volatile type *)((uint64_t)(base) + (uint64_t)(reg))) = (type)(src); \
     } while (0)
 
 union apic_base_msr {
@@ -141,7 +141,8 @@ union apic_intr_cmd {
         uint8_t trigger_mode : 1;
         uint8_t reserved1 : 2;
         uint8_t destination_shorthand : 2;
-        uint64_t reserved2 : 36;
+        uint8_t reserved2 : 4;
+        uint8_t reserved3[4];
         uint8_t destination;
     } __attribute__((packed));
 };

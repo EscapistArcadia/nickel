@@ -7,8 +7,11 @@
 #include <arch/default_idt.h>
 
 #include <arch/apic/registers.h>
+#include <arch/apic/ipi.h>
 
 #if defined(NICKEL_X86_64)
+volatile uint64_t apic_base;
+
 static void apic_test(void) {
     volatile union apic_base_msr base_msr;
     volatile uint32_t eax, ebx, ecx, edx;
@@ -30,6 +33,42 @@ static void apic_test(void) {
         base_msr.apic_enable = 1;  /* enable the APIC */
         apic_write_base_msr(base_msr);
     }
+
+    apic_base = base_msr.apic_base << 12;
+
+    extern volatile uint8_t ap_startup[], ap_startup_end[];
+
+    // for debug
+    static volatile uint8_t *ap_startup_code = (uint8_t *)0x8000;
+    *ap_startup_code = 0xEB;
+
+    for (volatile uint8_t *src = ap_startup, *dst = ap_startup_code; src < ap_startup_end; src++, dst++) {
+        *dst = *src;
+    }
+
+// extern volatile uint32_t cores = 0, enabled_cores = 0;
+    extern volatile struct acpi_processor_local_apic processors[256];
+
+    uint32_t ret;
+    apic_read_reg(apic_base, APIC_REG_INTERRUPT_COMMAND_LOW, ret, uint32_t);
+    if (ret & (1 << 12)) {
+        // APIC is busy, do not send IPI
+        return;
+    }
+
+    apic_send_init_ipi(processors[1].apic_id);
+    
+    for (volatile int i = 0; i < 100000000; i++) {
+        __asm__ volatile("pause");
+    }
+    apic_send_startup_ipi(processors[1].apic_id, (uint8_t *)ap_startup_code);
+    
+    for (volatile int i = 0; i < 300000000; i++) {
+        __asm__ volatile("pause");
+    }
+    apic_send_startup_ipi(processors[1].apic_id, (uint8_t *)ap_startup_code);
+
+    while (1);
 }
 
 static void arch_test(void) {
@@ -101,6 +140,16 @@ static void arch_test(void) {
     //     "int3\n"                                                                    /* triggers breakpoint exception */
     // );
 
+    volatile union pml_entry *pml4e;
+    asm volatile (
+        "movq %%cr3, %0\n"
+        : "=r"(pml4e)
+        :
+        : "memory"
+    );
+
+    pml4e = (union pml_entry *)((uint64_t)pml4e & 0xFFFFFFFFFFFFF000);
+
     apic_test();
 }
 #elif defined(NICKEL_AARCH64)
@@ -125,12 +174,12 @@ static void NickelMain(struct nickel_boot_info *boot_info) {
         goto halt;  /* halt the CPU if the kernel version is incorrect */
     }
 
-    arch_test();
-
     ret = acpi_init((struct acpi_xsdp_desc *)boot_info->acpi_rsdp);
     if (ret < 0) {
         goto halt;  /* halt the CPU if ACPI initialization fails */
     }
+
+    arch_test();
 halt:
     while (1);
 }
