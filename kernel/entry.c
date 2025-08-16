@@ -49,23 +49,12 @@ static void apic_test(void) {
 // extern volatile uint32_t cores = 0, enabled_cores = 0;
     extern volatile struct acpi_processor_local_apic processors[256];
 
-    uint32_t ret;
-    apic_read_reg(apic_base, APIC_REG_INTERRUPT_COMMAND_LOW, ret, uint32_t);
-    if (ret & (1 << 12)) {
-        // APIC is busy, do not send IPI
-        return;
-    }
-
     apic_send_init_ipi(processors[1].apic_id);
     
-    for (volatile int i = 0; i < 100000000; i++) {
+    for (volatile int i = 0; i < 20000000; i++) {
         __asm__ volatile("pause");
     }
-    apic_send_startup_ipi(processors[1].apic_id, (uint8_t *)ap_startup_code);
     
-    for (volatile int i = 0; i < 300000000; i++) {
-        __asm__ volatile("pause");
-    }
     apic_send_startup_ipi(processors[1].apic_id, (uint8_t *)ap_startup_code);
 
     while (1);

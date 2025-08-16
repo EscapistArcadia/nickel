@@ -32,29 +32,53 @@
 
 #define APIC_BASE_MSR                   0x1B
 
-#define APIC_DELIVERY_MODE_FIXED        0x0
-#define APIC_DELIVERY_MODE_LOWEST       0x1
-#define APIC_DELIVERY_MODE_SMI          0x2
-#define APIC_DELIVERY_MODE_NMI          0x4
-#define APIC_DELIVERY_MODE_INIT         0x5
-#define APIC_DELIVERY_MODE_STARTUP      0x6
+#define APIC_FIELD(mask, shift, type)   ((type)((mask) << (shift)))
 
-#define APIC_DESTINATION_MODE_PHYSICAL  0x0
-#define APIC_DESTINATION_MODE_LOGICAL   0x1
+#define APIC_VECTOR_SHIFT               0
+#define APIC_VECTOR_MASK                0xFF
+#define APIC_VECTOR(vector)             APIC_FIELD(vector, APIC_VECTOR_SHIFT, uint32_t)
 
-#define APIC_DELIVERY_STATUS_IDLE       0x0
-#define APIC_DELIVERY_STATUS_PENDING    0x1
+#define APIC_DELIVERY_MODE_SHIFT        8
+#define APIC_DELIVERY_MODE_MASK         0x7
+#define APIC_DELIVERY_MODE_FIXED        APIC_FIELD(0x0, APIC_DELIVERY_MODE_SHIFT, uint32_t)
+#define APIC_DELIVERY_MODE_LOWEST       APIC_FIELD(0x1, APIC_DELIVERY_MODE_SHIFT, uint32_t)
+#define APIC_DELIVERY_MODE_SMI          APIC_FIELD(0x2, APIC_DELIVERY_MODE_SHIFT, uint32_t)
+#define APIC_DELIVERY_MODE_NMI          APIC_FIELD(0x4, APIC_DELIVERY_MODE_SHIFT, uint32_t)
+#define APIC_DELIVERY_MODE_INIT         APIC_FIELD(0x5, APIC_DELIVERY_MODE_SHIFT, uint32_t)
+#define APIC_DELIVERY_MODE_STARTUP      APIC_FIELD(0x6, APIC_DELIVERY_MODE_SHIFT, uint32_t)
 
-#define APIC_LEVEL_DEASSERT             0x0
-#define APIC_LEVEL_ASSERT               0x1
+#define APIC_DESTINATION_MODE_SHIFT     11
+#define APIC_DESTINATION_MODE_MASK      0x1
+#define APIC_DESTINATION_MODE_PHYSICAL  APIC_FIELD(0x0, APIC_DESTINATION_MODE_SHIFT, uint32_t)
+#define APIC_DESTINATION_MODE_LOGICAL   APIC_FIELD(0x1, APIC_DESTINATION_MODE_SHIFT, uint32_t)
 
-#define APIC_TRIGGER_MODE_EDGE          0x0
-#define APIC_TRIGGER_MODE_LEVEL         0x1
+#define APIC_DELIVERY_STATUS_SHIFT      12
+#define APIC_DELIVERY_STATUS_MASK       0x1
+#define APIC_DELIVERY_STATUS_IDLE       APIC_FIELD(0x0, APIC_DELIVERY_STATUS_SHIFT, uint32_t)
+#define APIC_DELIVERY_STATUS_PENDING    APIC_FIELD(0x1, APIC_DELIVERY_STATUS_SHIFT, uint32_t)
 
-#define APIC_DESTINATION_SHORTHAND_NONE 0x0
-#define APIC_DESTINATION_SHORTHAND_SELF 0x1
-#define APIC_DESTINATION_SHORTHAND_ALL  0x2
-#define APIC_DESTINATION_SHORTHAND_ALL_EXCLUDING_SELF 0x3
+#define APIC_LEVEL_SHIFT                14
+#define APIC_LEVEL_MASK                 0x1
+#define APIC_LEVEL_DEASSERT             APIC_FIELD(0x0, APIC_LEVEL_SHIFT, uint32_t)
+#define APIC_LEVEL_ASSERT               APIC_FIELD(0x1, APIC_LEVEL_SHIFT, uint32_t)
+
+#define APIC_TRIGGER_MODE_SHIFT         15
+#define APIC_TRIGGER_MODE_MASK          0x1
+#define APIC_TRIGGER_MODE_EDGE          APIC_FIELD(0x0, APIC_TRIGGER_MODE_SHIFT, uint32_t)
+#define APIC_TRIGGER_MODE_LEVEL         APIC_FIELD(0x1, APIC_TRIGGER_MODE_SHIFT, uint32_t)
+
+#define APIC_DESTINATION_SHORTHAND_SHIFT 18
+#define APIC_DESTINATION_SHORTHAND_MASK  0x3
+#define APIC_DESTINATION_SHORTHAND_NONE  APIC_FIELD(0x0, APIC_DESTINATION_SHORTHAND_SHIFT, uint32_t)
+#define APIC_DESTINATION_SHORTHAND_SELF  APIC_FIELD(0x1, APIC_DESTINATION_SHORTHAND_SHIFT, uint32_t)
+#define APIC_DESTINATION_SHORTHAND_ALL   APIC_FIELD(0x2, APIC_DESTINATION_SHORTHAND_SHIFT, uint32_t)
+#define APIC_DESTINATION_SHORTHAND_ALL_EXCLUDING_SELF APIC_FIELD(0x3, APIC_DESTINATION_SHORTHAND_SHIFT, uint32_t)
+
+#define APIC_DESTINATION_SHIFT_DWORD    24
+// #define APIC_DESTINATION_SHIFT_QWORD    56
+#define APIC_DESTINATION_MASK           0xFF
+#define APIC_DESTINATION_DWORD(dest)    APIC_FIELD(dest, APIC_DESTINATION_SHIFT_DWORD, uint32_t)
+// #define APIC_DESTINATION_QWORD(dest)    APIC_FIELD(dest, APIC_DESTINATION_SHIFT_QWORD, uint64_t)
 
 #define apic_read_base_msr(dest)        \
     do {                                \
@@ -77,14 +101,14 @@
         );                              \
     } while (0)
 
-#define apic_read_reg(base, reg, dest, type) \
+#define apic_read_reg(base, reg, type, dest) \
     do {                                \
-        dest = *((volatile const type *)((uint64_t)(base) + (uint64_t)(reg))); \
+        dest = *((const type *)((uint64_t)(base) + (uint64_t)(reg))); \
     } while (0)
 
-#define apic_write_reg(base, reg, src, type) \
+#define apic_write_reg(base, reg, type, src) \
     do {                                \
-        *((volatile type *)((uint64_t)(base) + (uint64_t)(reg))) = (type)(src); \
+        *((type *)((uint64_t)(base) + (uint64_t)(reg))) = (type)(src); \
     } while (0)
 
 union apic_base_msr {
@@ -121,29 +145,6 @@ union apic_version_reg {
         uint8_t reserved0;
         uint8_t max_lvt_entries;
         uint8_t eoi_broadcast_suppression;
-    } __attribute__((packed));
-};
-
-union apic_intr_cmd {
-    uint64_t value;
-
-    struct {
-        uint32_t low, high;
-    } __attribute__((packed));
-
-    struct {
-        uint8_t vector;
-        uint8_t delivery_mode : 3;
-        uint8_t destination_mode : 1;
-        uint8_t delivery_status : 1;
-        uint8_t reserved0 : 1;
-        uint8_t level : 1;
-        uint8_t trigger_mode : 1;
-        uint8_t reserved1 : 2;
-        uint8_t destination_shorthand : 2;
-        uint8_t reserved2 : 4;
-        uint8_t reserved3[4];
-        uint8_t destination;
     } __attribute__((packed));
 };
 
