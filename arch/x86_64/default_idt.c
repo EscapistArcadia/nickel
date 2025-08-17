@@ -126,4 +126,7 @@ void init_idt() {
     idt_entries[20] = SIMPLE_IDT_ENTRY(20, exp14_virtualization, IVT_INTERRUPT, 0);
     idt_entries[21] = SIMPLE_IDT_ENTRY(21, exp15_security, IVT_INTERRUPT, 0);
     idt_entries[22] = SIMPLE_IDT_ENTRY(22, exp16_reserved, IVT_INTERRUPT, 0);
+
+    extern void temp_timer_handler(void);
+    idt_entries[234] = SIMPLE_IDT_ENTRY(234, temp_timer_handler, IVT_INTERRUPT, 0);
 }
