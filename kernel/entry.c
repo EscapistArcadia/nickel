@@ -6,7 +6,83 @@
 #include <arch/flat_gdt.h>
 #include <arch/default_idt.h>
 
+#include <arch/apic/registers.h>
+#include <arch/apic/ipi.h>
+
 #if defined(NICKEL_X86_64)
+volatile uint64_t apic_base;
+
+void temp_timer_handler(void);
+
+void temp_timer_handler(void) {
+    // send eoi
+    apic_write_reg(apic_base, APIC_REG_EOI, uint32_t, 0xECEBCAFE);
+
+    asm volatile ("iretq");
+}
+
+static void apic_test(void) {
+    volatile union apic_base_msr base_msr;
+    volatile uint32_t eax, ebx, ecx, edx;
+
+    asm volatile (
+        "cpuid\n"
+        : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+        : "a"(0)
+    );
+
+    asm volatile (
+        "cpuid\n"
+        : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+        : "a"(1)
+    );
+
+    apic_read_base_msr(base_msr);
+    if (!base_msr.apic_enable) {
+        base_msr.apic_enable = 1;  /* enable the APIC */
+        apic_write_base_msr(base_msr);
+    }
+
+    apic_base = base_msr.apic_base << 12;
+
+    extern volatile uint8_t ap_startup[], ap_startup_end[];
+
+    // for debug
+    static volatile uint8_t *ap_startup_code = (uint8_t *)0x8000;
+    *ap_startup_code = 0xEB;
+
+    for (volatile uint8_t *src = ap_startup, *dst = ap_startup_code; src < ap_startup_end; src++, dst++) {
+        *dst = *src;
+    }
+
+    // extern volatile uint32_t cores = 0, enabled_cores = 0;
+    // extern volatile struct acpi_processor_local_apic processors[256];
+
+    // apic_send_init_ipi(processors[1].apic_id);
+    
+    // for (volatile int i = 0; i < 20000000; i++) {
+    //     __asm__ volatile("pause");
+    // }
+    
+    // apic_send_startup_ipi(processors[1].apic_id, (uint8_t *)ap_startup_code);
+
+    apic_write_reg(apic_base, APIC_REG_LVT_TIMER, uint32_t,
+        APIC_VECTOR(234)
+        | APIC_MASK_UNMASKED
+        | APIC_TIMER_MODE_PERIODIC
+    );
+
+    apic_write_reg(apic_base, APIC_REG_TIMER_DIVIDE_CONFIG, uint32_t,
+        APIC_DIVIDE_CONFIG_1
+    );
+
+    apic_write_reg(apic_base, APIC_REG_TIMER_INITIAL_COUNT, uint32_t,
+        0x400
+    );
+
+    while (1);
+}
+
 static void arch_test(void) {
     /**
      * @note The following snippet of code performs data section initialization (LMA). `__ld_data_start`, `__ld_data_end`,
@@ -75,6 +151,18 @@ static void arch_test(void) {
     //     "ud2\n"                                                                     /* triggers invalid opcode exception */
     //     "int3\n"                                                                    /* triggers breakpoint exception */
     // );
+
+    volatile union pml_entry *pml4e;
+    asm volatile (
+        "movq %%cr3, %0\n"
+        : "=r"(pml4e)
+        :
+        : "memory"
+    );
+
+    pml4e = (union pml_entry *)((uint64_t)pml4e & 0xFFFFFFFFFFFFF000);
+
+    apic_test();
 }
 #elif defined(NICKEL_AARCH64)
 #elif defined(NICKEL_RISCV64)
@@ -98,12 +186,12 @@ static void NickelMain(struct nickel_boot_info *boot_info) {
         goto halt;  /* halt the CPU if the kernel version is incorrect */
     }
 
-    arch_test();
-
     ret = acpi_init((struct acpi_xsdp_desc *)boot_info->acpi_rsdp);
     if (ret < 0) {
         goto halt;  /* halt the CPU if ACPI initialization fails */
     }
+
+    arch_test();
 halt:
     while (1);
 }

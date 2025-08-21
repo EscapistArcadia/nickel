@@ -141,4 +141,91 @@ union tss {
     } __attribute__((packed));
 };
 
+union pml_entry {
+    uint64_t value;
+
+    struct {
+        uint8_t present : 1;
+        uint8_t read_write : 1;
+        uint8_t user_supervisor : 1;
+        uint8_t write_through : 1;
+        uint8_t cache_disabled : 1;
+        uint8_t accessed : 1;
+        uint64_t reserved0 : 5;                                                     /* note: offset of packed bit-field 'reserved0' has changed in GCC 4.4 if uint8_t */
+        uint8_t hlat_restart : 1;                                                   /* What does this mean? */
+        uint64_t address : 40;
+        uint64_t reserved3 : 11;
+        uint8_t executable : 1;
+    } __attribute__((packed));
+};
+
+union pdt_entry {
+    uint64_t value;
+
+    struct {
+        uint8_t present : 1;
+        uint8_t read_write : 1;
+        uint8_t user_supervisor : 1;
+        uint8_t write_through : 1;
+        uint8_t cache_disabled : 1;
+        uint8_t accessed : 1;
+        uint8_t reserved0 : 1;
+        uint8_t huge_page : 1;
+        uint8_t reserved1 : 3;
+        uint8_t hlat_restart : 1; // TODO
+        uint64_t address : 40;
+        uint64_t reserved3 : 11;
+        uint8_t executable : 1;
+    } __attribute__((packed));
+};
+
+union pt_huge_entry {
+    uint64_t value;
+
+    struct {
+        uint8_t present : 1;
+        uint8_t read_write : 1;
+        uint8_t user_supervisor : 1;
+        uint8_t write_through : 1;
+        uint8_t cache_disabled : 1;
+        uint8_t accessed : 1;
+        uint8_t dirty : 1;
+        uint8_t huge_page : 1;
+        uint8_t global : 1;
+        uint8_t reserved1 : 2;
+        uint8_t hlat_restart : 1; // TODO
+        uint64_t address : 40;
+        uint64_t reserved3 : 7;
+        uint8_t protection_key : 4;
+        uint8_t executable : 1;
+    } __attribute__((packed));
+};
+
+union pt_entry {
+    uint64_t value;
+
+    struct {
+        uint8_t present : 1;
+        uint8_t read_write : 1;
+        uint8_t user_supervisor : 1;
+        uint8_t write_through : 1;
+        uint8_t cache_disabled : 1;
+        uint8_t accessed : 1;
+        uint8_t dirty : 1;
+        uint8_t huge_page : 1;
+        uint8_t global : 1;
+        uint8_t reserved1 : 2;
+        uint8_t hlat_restart : 1; // TODO
+        uint64_t address : 40;
+        uint64_t reserved3 : 7;
+        uint8_t protection_key : 4;
+        uint8_t executable : 1;
+    } __attribute__((packed));
+};
+
+static volatile union pml_entry *pml;
+static volatile union pdt_entry *pdt;
+static volatile union pt_huge_entry *pt_huge;
+static volatile union pt_entry *pt;
+
 #endif

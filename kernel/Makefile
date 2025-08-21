@@ -23,8 +23,9 @@ endif
 LDFLAGS += -T $(LINKER)
 LDFLAGS += -nostdlib -static 
 
+ASM_SRCS := $(abspath $(shell find $(ARCH_DIR) -name "*.s")) $(abspath $(shell find . -name "*.s"))
 SRCS := $(abspath $(shell find $(ARCH_DIR) -name "*.c")) $(abspath $(shell find . -name "*.c"))
-OBJS := $(SRCS:.c=.o)
+OBJS := $(ASM_SRCS:.s=.o) $(SRCS:.c=.o)
 LINKER := linker.ld
 
 all: kernel
@@ -32,9 +33,12 @@ all: kernel
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-kernel: $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(KERNEL_ELF)
+%.o: %.s
+	$(CC) $(CFLAGS) -c $< -o $@
+
+kernel: $(OBJS) $(ASM_OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) $(ASM_OBJS) -o $(KERNEL_ELF)
 	$(OBJCOPY) -O binary $(KERNEL_ELF) $(KERNEL_EXECUTABLE)
 
 clean:
-	rm -rf $(OBJS) $(KERNEL_ELF) $(KERNEL_EXECUTABLE)
+	rm -rf $(OBJS) $(ASM_OBJS) $(KERNEL_ELF) $(KERNEL_EXECUTABLE)

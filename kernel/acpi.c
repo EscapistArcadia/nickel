@@ -2,8 +2,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static volatile uint32_t cores = 0, enabled_cores = 0;
-static volatile struct acpi_processor_local_apic processors[256];
+#include <arch/apic/ipi.h>
+
+volatile uint32_t cores = 0, enabled_cores = 0;
+volatile struct acpi_processor_local_apic processors[256];
 
 static int strncmp(const char *s1, const char *s2, size_t n) {
     while (n && *s1 && ( *s1 == *s2 )) {
