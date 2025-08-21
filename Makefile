@@ -1,5 +1,6 @@
 # architecture specification
 ARCH ?= x86_64
+CORES ?= 8
 
 # gnu-efi directory
 GNU_EFI_DIR := $(PWD)/../gnu-efi
@@ -34,9 +35,9 @@ KERNEL_ELF := $(PWD)/nickel.elf
 KERNEL_EXECUTABLE := $(PWD)/nickel.bin
 
 # kernel macro data specification
-NICKEL_HEADER_OFFSET := 0x4000
-NICKEL_BOOT_MAGIC := 0x4573636170697374
-NICKEL_VERSION := 0xECEBCAFE
+# NICKEL_HEADER_OFFSET := 0x4000
+# NICKEL_BOOT_MAGIC := 0x4573636170697374
+# NICKEL_VERSION := 0xECEBCAFE
 
 ifeq ($(ARCH), x86_64)
 BOOTABLE_ELF_DEST := bootx64.efi
@@ -59,8 +60,8 @@ export ARCH CC LD AS OBJCOPY
 export GNU_EFI_DIR ARCH_DIR EFI_SRC_DIR KERNEL_DIR KERNEL_INCLUDE ARCH_INCLUDE
 export BOOTABLE_EFI FILE_SYSTEM_IMAGE KERNEL_ELF KERNEL_EXECUTABLE
 export KERNEL_ADDRESS
-export NICKEL_HEADER_OFFSET
-export NICKEL_BOOT_MAGIC NICKEL_VERSION
+# export NICKEL_HEADER_OFFSET
+# export NICKEL_BOOT_MAGIC NICKEL_VERSION
 
 # all: gnu-efi efi_boot nickel filesys
 
@@ -85,18 +86,18 @@ filesys:
 
 run:
 ifeq ($(ARCH), x86_64)
-	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -smp $(CORES)
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -smp $(CORES)
 else
 	$(error "Unsupported Architecture: $(ARCH)")
 endif
 
 debug:
 ifeq ($(ARCH), x86_64)
-	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -s -S
+	qemu-system-x86_64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -m 4G -s -S -smp $(CORES)
 else ifeq ($(ARCH), aarch64)
-	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -s -S
+	qemu-system-aarch64 -drive format=raw,file=$(FILE_SYSTEM_IMAGE) -bios $(UEFI_BIOS) -machine virt -cpu cortex-a72 -m 4G -s -S -smp $(CORES)
 else
 	$(error "Unsupported Architecture: $(ARCH)")
 endif
