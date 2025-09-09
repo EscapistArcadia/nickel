@@ -135,21 +135,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
         while (1);                                                                  /* halt the CPU if the header is invalid */
     }
 
-    struct nickel_boot_info boot_info = {
-        .header = *header,
-        .base_address = kernel_addr,
-        // .acpi_rsdp = boot_info.acpi_xsdp
-    };
-
-    EFI_GUID gEfiAcpi20TableGuid = ACPI_20_TABLE_GUID;                              /* ACPI 2.0 table GUID */
-    for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++) {
-        if (CompareGuid(&SystemTable->ConfigurationTable[i].VendorGuid, &gEfiAcpi20TableGuid) == 0) {
-            boot_info.acpi_rsdp = (UINT64)SystemTable->ConfigurationTable[i].VendorTable; /* gets the ACPI XSDT address */
-            // Print(L"ACPI XSDP Address: 0x%lx\n", boot_info.acpi_xsdp);
-            break;                                                                  /* found the ACPI table */
-        }
-    }
-
     // Print(L"Boot Info: 0x%lx\n", &boot_info);
     // Print(L"  Kernel Base Address: 0x%lx\n", boot_info.base_address);
     // Print(L"  ACPI RSDP Address: 0x%lx\n", boot_info.acpi_rsdp);
@@ -165,6 +150,27 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
     status = uefi_call_wrapper(SystemTable->BootServices->ExitBootServices, 2, 
                                ImageHandle, map_key);
     EFI_CHECK_STATUS(status, EFI_SUCCESS);                                          /* we can no longer call any UEFI routines */
+
+
+    struct nickel_boot_info boot_info = {
+        .header = *header,
+        .base_address = kernel_addr,
+        // .acpi_rsdp = boot_info.acpi_xsdp
+    };
+
+    EFI_GUID gEfiAcpi20TableGuid = ACPI_20_TABLE_GUID;                              /* ACPI 2.0 table GUID */
+    for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++) {
+        if (CompareGuid(&SystemTable->ConfigurationTable[i].VendorGuid, &gEfiAcpi20TableGuid) == 0) {
+            boot_info.acpi_rsdp = (UINT64)SystemTable->ConfigurationTable[i].VendorTable; /* gets the ACPI XSDT address */
+            // Print(L"ACPI XSDP Address: 0x%lx\n", boot_info.acpi_xsdp);
+            break;                                                                  /* found the ACPI table */
+        }
+    }
+    boot_info.efi_mmap.key = map_key;
+    boot_info.efi_mmap.mmap = (UINT64)memory_map;
+    boot_info.efi_mmap.map_size = memory_map_size;
+    boot_info.efi_mmap.desc_size = descriptor_size;
+    boot_info.efi_mmap.desc_version = descriptor_version;
 
     /* **************************************************
      * *                 Jump to Kernel                 *

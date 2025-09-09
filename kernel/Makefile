@@ -1,6 +1,6 @@
 CFLAGS += -Wall -Wextra -Werror -Wredundant-decls -Wshadow \
 			-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable \
-			-Wmissing-declarations -Wmissing-field-initializers \
+			-Wmissing-field-initializers \
 			-Wswitch-default -Wold-style-definition -Wtype-limits \
 			-Wpointer-arith -Waddress -Winline -Waggregate-return
 CFLAGS += -ffreestanding -fno-stack-protector -fno-stack-check \

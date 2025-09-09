@@ -9,10 +9,10 @@
 #include <arch/apic/registers.h>
 #include <arch/apic/ipi.h>
 
+// void NickelMain(struct nickel_boot_info *boot_info);
+
 #if defined(NICKEL_X86_64)
 volatile uint64_t apic_base;
-
-void temp_timer_handler(void);
 
 void temp_timer_handler(void) {
     // send eoi
@@ -168,6 +168,14 @@ static void arch_test(void) {
 #elif defined(NICKEL_RISCV64)
 #endif
 
+struct nickel_memory_map {
+    uint64_t base;
+    uint64_t size;
+    uint32_t type;
+};
+
+volatile struct nickel_memory_map memory_map[256] __attribute__((used)) = {0};
+
 /**
  * @brief This function is the main entry point for the kernel. It is called from the bootloader
  *        after the CPU has been set up. It will diverge into different echosystems based on the
@@ -177,13 +185,29 @@ static void arch_test(void) {
  * @param param the pointer to the parameter passed from the bootloader.
  */
 __attribute__((noreturn))
-static void NickelMain(struct nickel_boot_info *boot_info) {
+void NickelMain(struct nickel_boot_info *boot_info) {
     int32_t ret;
-    
+    volatile uint64_t entry_count = boot_info->efi_mmap.map_size / boot_info->efi_mmap.desc_size;
+    volatile uint64_t i, j = 0;
+    volatile struct efi_memory_desc *desc = (struct efi_memory_desc *)boot_info->efi_mmap.mmap;
+
     if (boot_info->header.magic != NICKEL_BOOT_MAGIC) {
         goto halt;  /* halt the CPU if the magic number is incorrect */
     } else if (boot_info->header.kernel_version != NICKEL_VERSION) {
         goto halt;  /* halt the CPU if the kernel version is incorrect */
+    }
+
+    for (i = 0; i < entry_count; ++i, desc = (struct efi_memory_desc *)((uint8_t *)desc + boot_info->efi_mmap.desc_size)) {
+        if (desc->type >= NICKEL_UEFI_MEM_MAX) {
+            desc->type = NICKEL_UEFI_MEM_UNACCEPTED;                                   /* mark unaccepted memory */
+        }
+        
+        if (desc->type > NICKEL_UEFI_MEM_RESERVED && desc->type < NICKEL_UEFI_MEM_UNUSABLE) {
+            memory_map[j].base = desc->physical_start;
+            memory_map[j].size = desc->number_of_pages * 4096;
+            memory_map[j].type = desc->type;
+            ++j;
+        }
     }
 
     ret = acpi_init((struct acpi_xsdp_desc *)boot_info->acpi_rsdp);
